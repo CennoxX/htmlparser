@@ -272,7 +272,7 @@ $ cat robots.html  | htmlparser 'div#p-namespaces a'
 <a href="/wiki/Robots_exclusion_standard" title="View the content page [c]" accesskey="c">
  Article
 </a>
-<a href="/wiki/Talk:Robots_exclusion_standard" title="Discussion about the content page [t]" accesskey="t">
+<a href="/wiki/Talk:Robots_exclusion_standard" rel="discussion" title="Discussion about the content page [t]" accesskey="t">
  Talk
 </a>
 ```
@@ -283,21 +283,30 @@ $ cat robots.html | htmlparser 'div#p-namespaces a json{}'
  {
   "attrs": {
    "accesskey": "c",
+   "children": [
+    {
+     "text": "Article"
+    }
+   ],
    "href": "/wiki/Robots_exclusion_standard",
    "title": "View the content page [c]"
   },
   "tag": "a",
-  "text": "Article"
  },
  {
   "attrs": {
    "accesskey": "t",
+   "children": [
+    {
+     "text": "Talk"
+    }
+   ],
    "href": "/wiki/Talk:Robots_exclusion_standard",
    "rel": "discussion",
    "title": "Discussion about the content page [t]"
   },
+  "rel": "discussion",
   "tag": "a",
-  "text": "Talk"
  }
 ]
 ```
@@ -310,21 +319,30 @@ $ cat robots.html | htmlparser -i 4 'div#p-namespaces a json{}'
     {
         "attrs": {
             "accesskey": "c",
+            "children": [
+                {
+                    "text": "Article"
+                }
+            ],
             "href": "/wiki/Robots_exclusion_standard",
             "title": "View the content page [c]"
         },
         "tag": "a",
-        "text": "Article"
     },
     {
         "attrs": {
             "accesskey": "t",
+            "children": [
+                {
+                    "text": "Talk"
+                }
+            ],
             "href": "/wiki/Talk:Robots_exclusion_standard",
             "rel": "discussion",
             "title": "Discussion about the content page [t]"
         },
+        "rel": "discussion",
         "tag": "a",
-        "text": "Talk"
     }
 ]
 ```
