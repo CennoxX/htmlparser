@@ -45,7 +45,7 @@ func ParseHTML(r io.Reader, cs string) (*html.Node, error) {
 
 func PrintHelp(w io.Writer, exitCode int) {
 	helpString := `Usage
-    pup [flags] [selectors] [optional display function]
+    htmlparser [flags] [selectors] [optional display function]
 Version
     %s
 Flags

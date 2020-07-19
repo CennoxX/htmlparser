@@ -1,23 +1,23 @@
-# pup
+# htmlparser
 
-pup is a command line tool for processing HTML. It reads from stdin,
+htmlparser is a command line tool for processing HTML. It reads from stdin,
 prints to stdout, and allows the user to filter parts of the page using
 [CSS selectors](https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Getting_started/Selectors).
 
-Inspired by [jq](http://stedolan.github.io/jq/), pup aims to be a
+Inspired by [jq](http://stedolan.github.io/jq/), htmlparser aims to be a
 fast and flexible way of exploring HTML from the terminal.
 
 ## Install
 
-Direct downloads are available through the [releases page](https://github.com/EricChiang/pup/releases/latest).
+Direct downloads are available through the [releases page](https://github.com/htmlparser/htmlparser/releases/latest).
 
 If you have Go installed on your computer just run `go get`.
 
-    go get github.com/ericchiang/pup
+    go get github.com/htmlparser/htmlparser
 
 If you're on OS X, use [Homebrew](http://brew.sh/) to install (no Go required).
 
-    brew install https://raw.githubusercontent.com/EricChiang/pup/master/pup.rb
+    brew install https://raw.githubusercontent.com/htmlparser/htmlparser/master/htmlparser.rb
 
 ## Quick start
 
@@ -25,28 +25,28 @@ If you're on OS X, use [Homebrew](http://brew.sh/) to install (no Go required).
 $ curl -s https://news.ycombinator.com/
 ```
 
-Ew, HTML. Let's run that through some pup selectors:
+Ew, HTML. Let's run that through some htmlparser selectors:
 
 ```bash
-$ curl -s https://news.ycombinator.com/ | pup 'table table tr:nth-last-of-type(n+2) td.title a'
+$ curl -s https://news.ycombinator.com/ | htmlparser 'table table tr:nth-last-of-type(n+2) td.title a'
 ```
 
 Okay, how about only the links?
 
 ```bash
-$ curl -s https://news.ycombinator.com/ | pup 'table table tr:nth-last-of-type(n+2) td.title a attr{href}'
+$ curl -s https://news.ycombinator.com/ | htmlparser 'table table tr:nth-last-of-type(n+2) td.title a attr{href}'
 ```
 
 Even better, let's grab the titles too:
 
 ```bash
-$ curl -s https://news.ycombinator.com/ | pup 'table table tr:nth-last-of-type(n+2) td.title a json{}'
+$ curl -s https://news.ycombinator.com/ | htmlparser 'table table tr:nth-last-of-type(n+2) td.title a json{}'
 ```
 
 ## Basic Usage
 
 ```bash
-$ cat index.html | pup [flags] '[selectors] [display function]'
+$ cat index.html | htmlparser [flags] '[selectors] [display function]'
 ```
 
 ## Examples
@@ -59,19 +59,19 @@ $ wget http://en.wikipedia.org/wiki/Robots_exclusion_standard -O robots.html
 
 #### Clean and indent
 
-By default pup will fill in missing tags and properly indent the page.
+By default htmlparser will fill in missing tags and properly indent the page.
 
 ```bash
 $ cat robots.html
 # nasty looking HTML
-$ cat robots.html | pup --color
+$ cat robots.html | htmlparser --color
 # cleaned, indented, and colorful HTML
 ```
 
 #### Filter by tag
 
 ```bash
-$ cat robots.html | pup 'title'
+$ cat robots.html | htmlparser 'title'
 <title>
  Robots exclusion standard - Wikipedia, the free encyclopedia
 </title>
@@ -80,7 +80,7 @@ $ cat robots.html | pup 'title'
 #### Filter by id
 
 ```bash
-$ cat robots.html | pup 'span#See_also'
+$ cat robots.html | htmlparser 'span#See_also'
 <span class="mw-headline" id="See_also">
  See also
 </span>
@@ -89,7 +89,7 @@ $ cat robots.html | pup 'span#See_also'
 #### Filter by attribute
 
 ```bash
-$ cat robots.html | pup 'th[scope="row"]'
+$ cat robots.html | htmlparser 'th[scope="row"]'
 <th scope="row" class="navbox-group">
  Exclusion standards
 </th>
@@ -117,18 +117,18 @@ $ cat robots.html | pup 'th[scope="row"]'
 
 CSS selectors have a group of specifiers called ["pseudo classes"](
 https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)  which are pretty
-cool. pup implements a majority of the relevant ones them.
+cool. htmlparser implements a majority of the relevant ones them.
 
 Here are some examples.
 
 ```bash
-$ cat robots.html | pup 'a[rel]:empty'
+$ cat robots.html | htmlparser 'a[rel]:empty'
 <a rel="license" href="//creativecommons.org/licenses/by-sa/3.0/" style="display:none;">
 </a>
 ```
 
 ```bash
-$ cat robots.html | pup ':contains("History")'
+$ cat robots.html | htmlparser ':contains("History")'
 <span class="toctext">
  History
 </span>
@@ -138,7 +138,7 @@ $ cat robots.html | pup ':contains("History")'
 ```
 
 ```bash
-$ cat robots.html | pup ':parent-of([action="edit"])'
+$ cat robots.html | htmlparser ':parent-of([action="edit"])'
 <span class="wb-langlinks-edit wb-langlinks-link">
  <a action="edit" href="//www.wikidata.org/wiki/Q80776#sitelinks-wikipedia" text="Edit links" title="Edit interlanguage links" class="wbc-editpage">
   Edit links
@@ -153,10 +153,10 @@ section.
 #### `+`, `>`, and `,`
 
 These are intermediate characters that declare special instructions. For
-instance, a comma `,` allows pup to specify multiple groups of selectors.
+instance, a comma `,` allows htmlparser to specify multiple groups of selectors.
 
 ```bash
-$ cat robots.html | pup 'title, h1 span[dir="auto"]'
+$ cat robots.html | htmlparser 'title, h1 span[dir="auto"]'
 <title>
  Robots exclusion standard - Wikipedia, the free encyclopedia
 </title>
@@ -171,7 +171,7 @@ When combining selectors, the HTML nodes selected by the previous selector will
 be passed to the next ones.
 
 ```bash
-$ cat robots.html | pup 'h1#firstHeading'
+$ cat robots.html | htmlparser 'h1#firstHeading'
 <h1 id="firstHeading" class="firstHeading" lang="en">
  <span dir="auto">
   Robots exclusion standard
@@ -180,7 +180,7 @@ $ cat robots.html | pup 'h1#firstHeading'
 ```
 
 ```bash
-$ cat robots.html | pup 'h1#firstHeading span'
+$ cat robots.html | htmlparser 'h1#firstHeading span'
 <span dir="auto">
  Robots exclusion standard
 </span>
@@ -192,37 +192,37 @@ For further examples of these selectors head over to [MDN](
 https://developer.mozilla.org/en-US/docs/Web/CSS/Reference).
 
 ```bash
-pup '.class'
-pup '#id'
-pup 'element'
-pup 'selector + selector'
-pup 'selector > selector'
-pup '[attribute]'
-pup '[attribute="value"]'
-pup '[attribute*="value"]'
-pup '[attribute~="value"]'
-pup '[attribute^="value"]'
-pup '[attribute$="value"]'
-pup ':empty'
-pup ':first-child'
-pup ':first-of-type'
-pup ':last-child'
-pup ':last-of-type'
-pup ':only-child'
-pup ':only-of-type'
-pup ':contains("text")'
-pup ':nth-child(n)'
-pup ':nth-of-type(n)'
-pup ':nth-last-child(n)'
-pup ':nth-last-of-type(n)'
-pup ':not(selector)'
-pup ':parent-of(selector)'
+htmlparser '.class'
+htmlparser '#id'
+htmlparser 'element'
+htmlparser 'selector + selector'
+htmlparser 'selector > selector'
+htmlparser '[attribute]'
+htmlparser '[attribute="value"]'
+htmlparser '[attribute*="value"]'
+htmlparser '[attribute~="value"]'
+htmlparser '[attribute^="value"]'
+htmlparser '[attribute$="value"]'
+htmlparser ':empty'
+htmlparser ':first-child'
+htmlparser ':first-of-type'
+htmlparser ':last-child'
+htmlparser ':last-of-type'
+htmlparser ':only-child'
+htmlparser ':only-of-type'
+htmlparser ':contains("text")'
+htmlparser ':nth-child(n)'
+htmlparser ':nth-of-type(n)'
+htmlparser ':nth-last-child(n)'
+htmlparser ':nth-last-of-type(n)'
+htmlparser ':not(selector)'
+htmlparser ':parent-of(selector)'
 ```
 
 You can mix and match selectors as you wish.
 
 ```bash
-cat index.html | pup 'element#id[attribute="value"]:first-of-type'
+cat index.html | htmlparser 'element#id[attribute="value"]:first-of-type'
 ```
 
 ## Display Functions
@@ -235,7 +235,7 @@ which can be provided as a final argument.
 Print all text from selected nodes and children in depth first order.
 
 ```bash
-$ cat robots.html | pup '.mw-headline text{}'
+$ cat robots.html | htmlparser '.mw-headline text{}'
 History
 About the standard
 Disadvantages
@@ -258,7 +258,7 @@ External links
 Print the values of all attributes with a given key from all selected nodes.
 
 ```bash
-$ cat robots.html | pup '.catlinks div attr{id}'
+$ cat robots.html | htmlparser '.catlinks div attr{id}'
 mw-normal-catlinks
 mw-hidden-catlinks
 ```
@@ -268,7 +268,7 @@ mw-hidden-catlinks
 Print HTML as JSON.
 
 ```bash
-$ cat robots.html  | pup 'div#p-namespaces a'
+$ cat robots.html  | htmlparser 'div#p-namespaces a'
 <a href="/wiki/Robots_exclusion_standard" title="View the content page [c]" accesskey="c">
  Article
 </a>
@@ -278,7 +278,7 @@ $ cat robots.html  | pup 'div#p-namespaces a'
 ```
 
 ```bash
-$ cat robots.html | pup 'div#p-namespaces a json{}'
+$ cat robots.html | htmlparser 'div#p-namespaces a json{}'
 [
  {
   "accesskey": "c",
@@ -300,7 +300,7 @@ $ cat robots.html | pup 'div#p-namespaces a json{}'
 Use the `-i` / `--indent` flag to control the intent level.
 
 ```bash
-$ cat robots.html | pup -i 4 'div#p-namespaces a json{}'
+$ cat robots.html | htmlparser -i 4 'div#p-namespaces a json{}'
 [
     {
         "accesskey": "c",
@@ -323,7 +323,7 @@ If the selectors only return one element the results will be printed as a JSON
 object, not a list.
 
 ```bash
-$ cat robots.html  | pup --indent 4 'title json{}'
+$ cat robots.html  | htmlparser --indent 4 'title json{}'
 {
     "tag": "title",
     "text": "Robots exclusion standard - Wikipedia, the free encyclopedia"
@@ -332,8 +332,8 @@ $ cat robots.html  | pup --indent 4 'title json{}'
 
 Because there is no universal standard for converting HTML/XML to JSON, a
 method has been chosen which hopefully fits. The goal is simply to get the
-output of pup into a more consumable format.
+output of htmlparser into a more consumable format.
 
 ## Flags
 
-Run `pup --help` for a list of further options
+Run `htmlparser --help` for a list of further options

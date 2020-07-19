@@ -1,4 +1,4 @@
-module github.com/ericchiang/pup
+module github.com/htmlparser/htmlparser
 
 go 1.13
 
