@@ -47,3 +47,6 @@ b6a3d6cccd305fcc3e8bf2743c443743bdaaa02b link , a:parent-of(sup)
 0d1f66765d1632c70f8608947890524e78459362 link , a:parent-of(sup) sup
 da39a3ee5e6b4b0d3255bfef95601890afd80709 li --number
 da39a3ee5e6b4b0d3255bfef95601890afd80709 li -n
+d0589399563047f15da01c9fc9c5d61c16bfc71f table.infobox tr > td:first-child json{}
+c2d0c7a5503973dbd6927516411248aaf307b901 table.infobox tr > th:first-child json{}
+ce7f8da23dea83aa0e10e1e54603a88d44e22e4c table.infobox tr > *:first-child json{}

@@ -77,7 +77,7 @@ type PseudoClass func(*html.Node) bool
 
 type CSSSelector struct {
 	Tag    string
-	Attrs  map[string]*regexp.Regexp
+	Attrs  map[string][]*regexp.Regexp
 	Pseudo PseudoClass
 }
 
@@ -85,20 +85,21 @@ func (s CSSSelector) Match(node *html.Node) bool {
 	if node.Type != html.ElementNode {
 		return false
 	}
-	if s.Tag != "" {
+	if s.Tag != "" && s.Tag != "*" {
 		if s.Tag != node.Data {
 			return false
 		}
 	}
-	for attrKey, matcher := range s.Attrs {
+	for attrKey, matchers := range s.Attrs {
 		matched := false
 		for _, attr := range node.Attr {
 			if attrKey == attr.Key {
-				if !matcher.MatchString(attr.Val) {
-					return false
+				for _, matcher := range matchers {
+					if !matcher.MatchString(attr.Val) {
+						return false
+					}
+					matched = true
 				}
-				matched = true
-				break
 			}
 		}
 		if !matched {
@@ -116,7 +117,7 @@ func (s CSSSelector) Match(node *html.Node) bool {
 func ParseSelector(cmd string) (selector CSSSelector, err error) {
 	selector = CSSSelector{
 		Tag:    "",
-		Attrs:  map[string]*regexp.Regexp{},
+		Attrs:  map[string][]*regexp.Regexp{},
 		Pseudo: nil,
 	}
 	var s scanner.Scanner
@@ -153,13 +154,21 @@ func ParseTagMatcher(selector *CSSSelector, s scanner.Scanner) error {
 	}
 }
 
+func AddAttrSelector(selector *CSSSelector, attrname string, regex *regexp.Regexp) {
+	if slice, ok := selector.Attrs[attrname]; ok && len(slice) > 0 {
+		selector.Attrs[attrname] = append(selector.Attrs[attrname], regex)
+	} else {
+		selector.Attrs[attrname] = []*regexp.Regexp{regex}
+	}
+}
+
 // Parse a class matcher
 // e.g. `.btn`
 func ParseClassMatcher(selector *CSSSelector, s scanner.Scanner) error {
 	var class bytes.Buffer
 	defer func() {
 		regexpStr := `(\A|\s)` + regexp.QuoteMeta(class.String()) + `(\s|\z)`
-		selector.Attrs["class"] = regexp.MustCompile(regexpStr)
+		AddAttrSelector(selector, "class", regexp.MustCompile(regexpStr))
 	}()
 	for {
 		c := s.Next()
@@ -188,7 +197,7 @@ func ParseIdMatcher(selector *CSSSelector, s scanner.Scanner) error {
 	var id bytes.Buffer
 	defer func() {
 		regexpStr := `^` + regexp.QuoteMeta(id.String()) + `$`
-		selector.Attrs["id"] = regexp.MustCompile(regexpStr)
+		AddAttrSelector(selector, "id", regexp.MustCompile(regexpStr))
 	}()
 	for {
 		c := s.Next()
@@ -233,9 +242,9 @@ func ParseAttrMatcher(selector *CSSSelector, s scanner.Scanner) error {
 			case '~':
 				regexpStr = `(\A|\s)` + regexp.QuoteMeta(attrVal.String()) + `(\s|\z)`
 			}
-			selector.Attrs[attrKey.String()] = regexp.MustCompile(regexpStr)
+			AddAttrSelector(selector, attrKey.String(), regexp.MustCompile(regexpStr))
 		} else {
-			selector.Attrs[attrKey.String()] = regexp.MustCompile(`^.*$`)
+			AddAttrSelector(selector, attrKey.String(), regexp.MustCompile(`^.*$`))
 		}
 	}()
 	// After reaching ']' proceed
@@ -510,12 +519,13 @@ func parseNthPseudo(cmd string) (PseudoClass, error) {
 		oddOrEven = 0
 	}
 	if oddOrEven > -1 {
+		fmt.Println("bruh it stopped")
 		return func(n *html.Node) bool {
 			return n.Type == html.ElementNode && countNth(n)%2 == oddOrEven
 		}, nil
 	}
 	// Check against '3n+4' pattern
-	r := regexp.MustCompile(`([0-9]+)n[ ]?\+[ ]?([0-9])`)
+	r := regexp.MustCompile(`([0-9]+)n[ ]?\+[ ]?([1-9][0-9]{0,2}|1000)$`)
 	subMatch := r.FindAllStringSubmatch(number, -1)
 	if len(subMatch) == 1 && len(subMatch[0]) == 3 {
 		cycle, _ := strconv.Atoi(subMatch[0][1])
@@ -524,8 +534,19 @@ func parseNthPseudo(cmd string) (PseudoClass, error) {
 			return n.Type == html.ElementNode && countNth(n)%cycle == offset
 		}, nil
 	}
+
+	// check against '-n+2' pattern
+	r = regexp.MustCompile(`^-n[ ]?\+[ ]?([1-9][0-9]{0,2}|1000)$`)
+	subMatch = r.FindAllStringSubmatch(number, -1)
+	if len(subMatch) == 1 && len(subMatch[0]) == 2 {
+		offset, _ := strconv.Atoi(subMatch[0][1])
+		return func(n *html.Node) bool {
+			return n.Type == html.ElementNode && countNth(n) <= offset
+		}, nil
+	}
+
 	// check against 'n+2' pattern
-	r = regexp.MustCompile(`n[ ]?\+[ ]?([0-9])`)
+	r = regexp.MustCompile(`^n[ ]?\+[ ]?([1-9][0-9]{0,2}|1000)$`)
 	subMatch = r.FindAllStringSubmatch(number, -1)
 	if len(subMatch) == 1 && len(subMatch[0]) == 2 {
 		offset, _ := strconv.Atoi(subMatch[0][1])

@@ -272,7 +272,7 @@ $ cat robots.html  | htmlparser 'div#p-namespaces a'
 <a href="/wiki/Robots_exclusion_standard" title="View the content page [c]" accesskey="c">
  Article
 </a>
-<a href="/wiki/Talk:Robots_exclusion_standard" title="Discussion about the content page [t]" accesskey="t">
+<a href="/wiki/Talk:Robots_exclusion_standard" rel="discussion" title="Discussion about the content page [t]" accesskey="t">
  Talk
 </a>
 ```
@@ -281,18 +281,32 @@ $ cat robots.html  | htmlparser 'div#p-namespaces a'
 $ cat robots.html | htmlparser 'div#p-namespaces a json{}'
 [
  {
-  "accesskey": "c",
-  "href": "/wiki/Robots_exclusion_standard",
+  "attrs": {
+   "accesskey": "c",
+   "children": [
+    {
+     "text": "Article"
+    }
+   ],
+   "href": "/wiki/Robots_exclusion_standard",
+   "title": "View the content page [c]"
+  },
   "tag": "a",
-  "text": "Article",
-  "title": "View the content page [c]"
  },
  {
-  "accesskey": "t",
-  "href": "/wiki/Talk:Robots_exclusion_standard",
+  "attrs": {
+   "accesskey": "t",
+   "children": [
+    {
+     "text": "Talk"
+    }
+   ],
+   "href": "/wiki/Talk:Robots_exclusion_standard",
+   "rel": "discussion",
+   "title": "Discussion about the content page [t]"
+  },
+  "rel": "discussion",
   "tag": "a",
-  "text": "Talk",
-  "title": "Discussion about the content page [t]"
  }
 ]
 ```
@@ -303,31 +317,34 @@ Use the `-i` / `--indent` flag to control the intent level.
 $ cat robots.html | htmlparser -i 4 'div#p-namespaces a json{}'
 [
     {
-        "accesskey": "c",
-        "href": "/wiki/Robots_exclusion_standard",
+        "attrs": {
+            "accesskey": "c",
+            "children": [
+                {
+                    "text": "Article"
+                }
+            ],
+            "href": "/wiki/Robots_exclusion_standard",
+            "title": "View the content page [c]"
+        },
         "tag": "a",
-        "text": "Article",
-        "title": "View the content page [c]"
     },
     {
-        "accesskey": "t",
-        "href": "/wiki/Talk:Robots_exclusion_standard",
+        "attrs": {
+            "accesskey": "t",
+            "children": [
+                {
+                    "text": "Talk"
+                }
+            ],
+            "href": "/wiki/Talk:Robots_exclusion_standard",
+            "rel": "discussion",
+            "title": "Discussion about the content page [t]"
+        },
+        "rel": "discussion",
         "tag": "a",
-        "text": "Talk",
-        "title": "Discussion about the content page [t]"
     }
 ]
-```
-
-If the selectors only return one element the results will be printed as a JSON
-object, not a list.
-
-```bash
-$ cat robots.html  | htmlparser --indent 4 'title json{}'
-{
-    "tag": "title",
-    "text": "Robots exclusion standard - Wikipedia, the free encyclopedia"
-}
 ```
 
 Because there is no universal standard for converting HTML/XML to JSON, a
